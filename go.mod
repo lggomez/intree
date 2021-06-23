@@ -1,4 +1,4 @@
-module github.com/geozelot/intree
+module github.com/lggomez/intree
 
 go 1.15
 

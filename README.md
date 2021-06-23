@@ -1,6 +1,8 @@
-[![GoDoc](https://godoc.org/github.com/geozelot/intree?status.svg)](https://godoc.org/github.com/geozelot/intree) [![Go Report Card](https://goreportcard.com/badge/github.com/geozelot/intree)](https://goreportcard.com/report/github.com/geozelot/intree)
+[![GoDoc](https://godoc.org/github.com/lggomez/intree?status.svg)](https://godoc.org/github.com/lggomez/intree) [![Go Report Card](https://goreportcard.com/badge/github.com/lggomez/intree)](https://goreportcard.com/report/github.com/lggomez/intree)
 
 # INTree for Go
+
+**Fork of https://github.com/geozelot/intree with test coverage and minor improvements**
 
 Very fast static, flat **IN**terval **Tree** implementation for reverse range searches.
 
@@ -17,7 +19,7 @@ Further scientific reading about the adapted algorithm and comparisons between d
 
 # Usage
 
-## API ([GoDoc](https://godoc.org/github.com/geozelot/intree))
+## API ([GoDoc](https://godoc.org/github.com/lggomez/intree))
 
 ### `type Bounds`
 
@@ -58,7 +60,7 @@ func (inT *INTree) Including(val float64) []int
 ## Import
 ```go
 import (
-    "github.com/geozelot/intree"
+    "github.com/lggomez/intree"
 )
 ```
 
@@ -84,7 +86,7 @@ func (sb *SimpleBounds) Limits() (float64, float64) {
 package main
 
 import (
-    "github.com/geozelot/intree"
+    "github.com/lggomez/intree"
     "fmt"
 )
 
