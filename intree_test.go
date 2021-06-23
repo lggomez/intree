@@ -29,7 +29,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/geozelot/intree"
+	"github.com/lggomez/intree"
 	"github.com/stretchr/testify/assert"
 )
 
