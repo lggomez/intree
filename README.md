@@ -14,8 +14,8 @@ Further scientific reading about the adapted algorithm and comparisons between d
 # Behaviour
 
 * INTree will build the tree once (**static; no updates after creation**)
-* INTree returns indices to the initial `[]Bounds` array
-* INTree currently supports finding all bounds for a single `float64` value
+* INTree returns indices to the initial boundaries array
+* INTree currently supports finding all interleaving boundaries for a single `float64` value
 
 # Usage
 
@@ -27,7 +27,18 @@ Further scientific reading about the adapted algorithm and comparisons between d
 
 ```go
 type Bounds interface {
-    Limits() (Lower, Upper float64)
+    Limits() (lower, upper float64)
+}
+```
+
+### `type ValuedBounds`
+
+`ValuedBounds{}` is the main interface expected by `NewINTreeV()`, acting as a wrapper for `Bounds`; Expects the `Value()` method for retrieving a value associated with the given boundaries
+
+```go
+type ValuedBounds interface {
+    Bounds
+    Value() interface{}
 }
 ```
 
@@ -46,7 +57,15 @@ type INTree struct {
 `NewINTree()` is the main initialization function; creates the tree from the given Slice of Bounds.
 
 ```go
-func NewINTree(bnds []Bounds) *INTree
+func NewINTree(bounds []Bounds) *INTree
+```
+
+### `func NewINTreeV`
+
+`NewINTreeV()` is the main initialization function; creates the tree from the given Slice of ValuedBounds.
+
+```go
+func NewINTreeV(bounds []ValuedBounds) *INTree
 ```
 
 ### `func (*INTree) Including`
@@ -54,7 +73,7 @@ func NewINTree(bnds []Bounds) *INTree
 `Including()` is the main entry point for bounds searches; traverses the tree and collects intervals that overlap with the given value.
 
 ```go
-func (inT *INTree) Including(val float64) []int
+func (t *INTree) Including(val float64) []int
 ```
 
 ## Import
@@ -149,6 +168,8 @@ func main() {
 
 }
 ```
+
+#### For more use cases you can see the [tests](intree_test.go)
 
 #### Try on [Go Playground](https://play.golang.org/p/RRDavPcgyhx).
 

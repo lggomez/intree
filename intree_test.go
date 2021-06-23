@@ -41,12 +41,6 @@ func (tb *testBounds) Limits() (float64, float64) {
 	return tb.Lower, tb.Upper
 }
 
-// valuedBounds is a composite intree.Bounds element with a value getter
-type valuedBounds interface {
-	intree.Bounds
-	Value() int
-}
-
 type valuedTestBounds struct {
 	Lower, Upper float64
 	value        int
@@ -56,7 +50,7 @@ func (wb *valuedTestBounds) Limits() (float64, float64) {
 	return wb.Lower, wb.Upper
 }
 
-func (wb *valuedTestBounds) Value() int {
+func (wb *valuedTestBounds) Value() interface{} {
 	return wb.value
 }
 
@@ -177,7 +171,7 @@ func Test_Tree(t *testing.T) {
 
 func Test_Tree_Valued(t *testing.T) {
 	t.Run("Case_Example", func(t *testing.T) {
-		inputBounds := []intree.Bounds{
+		inputBounds := []intree.ValuedBounds{
 			&valuedTestBounds{Lower: 4.0, Upper: 6.0, value: 1},
 			&valuedTestBounds{Lower: 5.0, Upper: 7.0, value: 2},
 			&valuedTestBounds{Lower: 4.0, Upper: 8.0, value: 3},
@@ -193,7 +187,7 @@ func Test_Tree_Valued(t *testing.T) {
 			&valuedTestBounds{Lower: 7.9, Upper: 8.9, value: 13},
 		}
 
-		tree := intree.NewINTree(inputBounds)
+		tree := intree.NewINTreeV(inputBounds)
 		matches := tree.Including(4.3)
 
 		assert.EqualValues(t, 5, len(matches))
@@ -206,101 +200,101 @@ func Test_Tree_Valued(t *testing.T) {
 			case 0:
 				assert.EqualValues(t, 4.0, lowerLimit)
 				assert.EqualValues(t, 6.0, upperLimit)
-				assert.EqualValues(t, matchedIndex+1, inputBounds[matchedIndex].(valuedBounds).Value())
+				assert.EqualValues(t, matchedIndex+1, inputBounds[matchedIndex].(intree.ValuedBounds).Value())
 			case 2:
 				assert.EqualValues(t, 4.0, lowerLimit)
 				assert.EqualValues(t, 8.0, upperLimit)
-				assert.EqualValues(t, matchedIndex+1, inputBounds[matchedIndex].(valuedBounds).Value())
+				assert.EqualValues(t, matchedIndex+1, inputBounds[matchedIndex].(intree.ValuedBounds).Value())
 			case 5:
 				assert.EqualValues(t, 3.0, lowerLimit)
 				assert.EqualValues(t, 6.0, upperLimit)
-				assert.EqualValues(t, matchedIndex+1, inputBounds[matchedIndex].(valuedBounds).Value())
+				assert.EqualValues(t, matchedIndex+1, inputBounds[matchedIndex].(intree.ValuedBounds).Value())
 			case 9:
 				assert.EqualValues(t, 3.2, lowerLimit)
 				assert.EqualValues(t, 7.5, upperLimit)
-				assert.EqualValues(t, matchedIndex+1, inputBounds[matchedIndex].(valuedBounds).Value())
+				assert.EqualValues(t, matchedIndex+1, inputBounds[matchedIndex].(intree.ValuedBounds).Value())
 			case 10:
 				assert.EqualValues(t, 4.1, lowerLimit)
 				assert.EqualValues(t, 4.9, upperLimit)
-				assert.EqualValues(t, matchedIndex+1, inputBounds[matchedIndex].(valuedBounds).Value())
+				assert.EqualValues(t, matchedIndex+1, inputBounds[matchedIndex].(intree.ValuedBounds).Value())
 			}
 		}
 	})
 	t.Run("Case_Border/nil_bounds", func(t *testing.T) {
-		tree := intree.NewINTree(nil)
+		tree := intree.NewINTreeV(nil)
 		matches := tree.Including(4.3)
 		assert.EqualValues(t, 0, len(matches))
 	})
 	t.Run("Case_Border/single_interval", func(t *testing.T) {
-		inputBounds := []intree.Bounds{
+		inputBounds := []intree.ValuedBounds{
 			&valuedTestBounds{Lower: 4.0, Upper: 6.0, value: 1},
 		}
 
-		tree := intree.NewINTree(inputBounds)
+		tree := intree.NewINTreeV(inputBounds)
 
 		matches := tree.Including(4.3)
 		assert.EqualValues(t, 1, len(matches))
-		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(valuedBounds).Value())
+		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(intree.ValuedBounds).Value())
 
 		matches = tree.Including(7)
 		assert.EqualValues(t, 0, len(matches))
 	})
 	t.Run("Case_Border/repeated_interval", func(t *testing.T) {
-		inputBounds := []intree.Bounds{
+		inputBounds := []intree.ValuedBounds{
 			&valuedTestBounds{Lower: 4.0, Upper: 6.0, value: 1},
 			&valuedTestBounds{Lower: 4.0, Upper: 6.0, value: 2},
 		}
 
-		tree := intree.NewINTree(inputBounds)
+		tree := intree.NewINTreeV(inputBounds)
 
 		matches := tree.Including(4.3)
 		assert.EqualValues(t, 2, len(matches))
-		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(valuedBounds).Value())
-		assert.EqualValues(t, matches[1]+1, inputBounds[matches[1]].(valuedBounds).Value())
+		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(intree.ValuedBounds).Value())
+		assert.EqualValues(t, matches[1]+1, inputBounds[matches[1]].(intree.ValuedBounds).Value())
 
 		matches = tree.Including(7)
 		assert.EqualValues(t, 0, len(matches))
 	})
 	t.Run("Case_Border/overlap_at_boundary", func(t *testing.T) {
-		inputBounds := []intree.Bounds{
+		inputBounds := []intree.ValuedBounds{
 			&valuedTestBounds{Lower: 4.0, Upper: 6.0, value: 1},
 			&valuedTestBounds{Lower: 6.0, Upper: 9.0, value: 2},
 			&valuedTestBounds{Lower: 9.0, Upper: 11.0, value: 3},
 		}
 
-		tree := intree.NewINTree(inputBounds)
+		tree := intree.NewINTreeV(inputBounds)
 
 		matches := tree.Including(6.0)
 		assert.EqualValues(t, 2, len(matches))
-		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(valuedBounds).Value())
-		assert.EqualValues(t, matches[1]+1, inputBounds[matches[1]].(valuedBounds).Value())
+		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(intree.ValuedBounds).Value())
+		assert.EqualValues(t, matches[1]+1, inputBounds[matches[1]].(intree.ValuedBounds).Value())
 
 		matches = tree.Including(9.0)
 		assert.EqualValues(t, 2, len(matches))
-		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(valuedBounds).Value())
-		assert.EqualValues(t, matches[1]+1, inputBounds[matches[1]].(valuedBounds).Value())
+		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(intree.ValuedBounds).Value())
+		assert.EqualValues(t, matches[1]+1, inputBounds[matches[1]].(intree.ValuedBounds).Value())
 	})
 	t.Run("Case_Border/fine_grained", func(t *testing.T) {
 		// As we are using IEEE 754 double precision floats, we will have pathological cases
 		// in which rounding may cause spurious results on interval matching. Nevertheless
 		// we perform some basic asserts with non-pathological, arbitrary precision numbers
 		// to validate the library implementation
-		inputBounds := []intree.Bounds{
+		inputBounds := []intree.ValuedBounds{
 			&valuedTestBounds{Lower: 3.43567981e-21, Upper: 3.43567984e-21, value: 1},
 			&valuedTestBounds{Lower: 3.43567987e-21, Upper: 3.43567990e-21, value: 2},
 		}
 
-		tree := intree.NewINTree(inputBounds)
+		tree := intree.NewINTreeV(inputBounds)
 
 		matches := tree.Including(3.43567985e-21) // between intervals
 		assert.EqualValues(t, 0, len(matches))
 
 		matches = tree.Including(3.43567987e-21) // at boundary
 		assert.EqualValues(t, 1, len(matches))
-		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(valuedBounds).Value())
+		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(intree.ValuedBounds).Value())
 
 		matches = tree.Including(3.43567988e-21) // inside second interval
 		assert.EqualValues(t, 1, len(matches))
-		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(valuedBounds).Value())
+		assert.EqualValues(t, matches[0]+1, inputBounds[matches[0]].(intree.ValuedBounds).Value())
 	})
 }

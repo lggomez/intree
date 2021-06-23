@@ -20,7 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// Changelog: Improve package code readability, add comments
+// Changelog: 	* Improve package code readability, add comments
+//				* Add ValuedBounds interface and compatibility builder
 
 // Package intree provides a very fast, static, flat, augmented interval tree for reverse range searches.
 package intree
@@ -35,6 +36,13 @@ type Bounds interface {
 	Limits() (lower, upper float64)
 }
 
+// ValuedBounds is the main interface expected by NewINTreeV(), acting as a wrapper for Bounds.
+// Expects the Value() method for retrieving a value associated with the given boundaries
+type ValuedBounds interface {
+	Bounds
+	Value() interface{}
+}
+
 // INTree is the main package object;
 // holds Slice of reference indices and the respective interval limits.
 type INTree struct {
@@ -42,9 +50,46 @@ type INTree struct {
 	limits  []float64
 }
 
+// NewINTree is the main initialization function;
+// creates the tree from the given Slice of Bounds.
+func NewINTree(bounds []Bounds) *INTree {
+	tree := INTree{}
+	tree.buildTree(bounds)
+
+	return &tree
+}
+
+// NewINTreeV is the main initialization function;
+// creates the tree from the given Slice of ValuedBounds.
+func NewINTreeV(bounds []ValuedBounds) *INTree {
+	tree := INTree{}
+	tree.buildTreeV(bounds)
+
+	return &tree
+}
+
 // buildTree is the internal tree construction function;
 // creates, sorts and augments nodes into Slices.
 func (t *INTree) buildTree(bounds []Bounds) {
+	t.indexes = make([]int, len(bounds))
+	t.limits = make([]float64, 3*len(bounds))
+
+	for i, v := range bounds {
+		t.indexes[i] = i
+		l, u := v.Limits()
+
+		t.limits[3*i] = l
+		t.limits[3*i+1] = u
+		t.limits[3*i+2] = 0
+	}
+
+	sort(t.limits, t.indexes)
+	augment(t.limits, t.indexes)
+}
+
+// buildTreeV is the internal tree construction function for ValuedBounds;
+// creates, sorts and augments nodes into Slices.
+func (t *INTree) buildTreeV(bounds []ValuedBounds) {
 	t.indexes = make([]int, len(bounds))
 	t.limits = make([]float64, 3*len(bounds))
 
@@ -99,15 +144,6 @@ func (t *INTree) Including(val float64) []int {
 	}
 
 	return result
-}
-
-// NewINTree is the main initialization function;
-// creates the tree from the given Slice of Bounds.
-func NewINTree(bounds []Bounds) *INTree {
-	tree := INTree{}
-	tree.buildTree(bounds)
-
-	return &tree
 }
 
 // augment is an internal utility function, adding maximum value of all child nodes to the current node.
